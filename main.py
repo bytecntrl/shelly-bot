@@ -1,12 +1,11 @@
 import asyncio
 
-from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from aiogram.utils.executor import Executor
+from dotenv import load_dotenv
 
 from core.config import Config, Session
-from core.plugins.start import start
-
+from core.plugins import load_plugins
 
 load_dotenv()
 
@@ -18,6 +17,8 @@ executor = Executor(dp, skip_updates=True)
 
 
 async def main():
+    load_plugins(dp)
+
     await executor._startup_polling()
     await dp.start_polling()
 
