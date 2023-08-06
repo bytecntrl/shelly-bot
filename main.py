@@ -5,6 +5,7 @@ from aiogram.utils.executor import Executor
 from dotenv import load_dotenv
 
 from core.config import Config, Session
+from core.database import init_db
 from core.plugins import load_plugins
 
 load_dotenv()
@@ -17,6 +18,8 @@ executor = Executor(dp, skip_updates=True)
 
 
 async def main():
+    await init_db()
+
     load_plugins(dp)
 
     await executor._startup_polling()

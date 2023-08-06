@@ -2,3 +2,4 @@ aiogram
 python-dotenv
 pydantic
 pydantic-settings
+tortoise-orm[accel]
