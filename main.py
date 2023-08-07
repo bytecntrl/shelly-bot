@@ -1,7 +1,6 @@
-import asyncio
+import pathlib
 
-from aiogram import Bot, Dispatcher
-from aiogram.utils.executor import Executor
+from telethon import TelegramClient
 from dotenv import load_dotenv
 
 from core.config import Config, Session
@@ -12,26 +11,19 @@ load_dotenv()
 
 conf = Session.config = Config()
 
-bot = Bot(conf.BOT_TOKEN)
-dp = Dispatcher(bot)
-executor = Executor(dp, skip_updates=True)
+path = pathlib.Path("core/session")
+path.mkdir(exist_ok=True)
+
+client = TelegramClient("core/session/shelly-bot", conf.API_ID, conf.API_HASH)
 
 
 async def main():
     await init_db()
 
-    load_plugins(dp)
-
-    await executor._startup_polling()
-    await dp.start_polling()
+    load_plugins(client)
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-
-    try:
-        loop.run_until_complete(main())
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    finally:
-        loop.run_until_complete(executor._shutdown_polling())
+    client.start(conf.BOT_TOKEN)
+    client.loop.run_until_complete(main())
+    client.run_until_disconnected()

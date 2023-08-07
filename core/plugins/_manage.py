@@ -1,16 +1,12 @@
 import importlib
 import pathlib
 
-from aiogram import Dispatcher
+from telethon import TelegramClient
 
 PATH = "core.plugins"
-TYPE_HANDLER = {
-    "message": lambda x: x.register_message_handler,
-    "callback_query": lambda x: x.register_callback_query_handler,
-}
 
 
-def load_plugins(dp: Dispatcher):
+def load_plugins(client: TelegramClient):
     path = pathlib.Path(*PATH.split("."))
     plugin_files = list(
         filter(lambda x: not x.name.startswith("_"), path.glob("*.py"))
@@ -20,5 +16,5 @@ def load_plugins(dp: Dispatcher):
         module = importlib.import_module(f"{PATH}.{file.stem}")
 
         for v in module.__dict__.values():
-            if callable(v) and hasattr(v, "type_handler"):
-                TYPE_HANDLER[v.type_handler](dp)(v)
+            if callable(v) and hasattr(v, "event"):
+                client.add_event_handler(v, v.event)

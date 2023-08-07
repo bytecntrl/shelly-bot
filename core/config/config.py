@@ -9,7 +9,10 @@ from pydantic_settings import (
 )
 
 LIST_ENV = {
+    "API_ID": "API_ID",
+    "API_HASH": "API_HASH",
     "BOT_TOKEN": "BOT_TOKEN",
+    "OWNER_ID": "OWNER_ID",
 }
 
 
@@ -27,8 +30,13 @@ class MyCustomSource(EnvSettingsSource):
 
 
 class Config(BaseSettings):
-    # Telegram settings
+    # Project settings
+    API_ID: int
+    API_HASH: str
     BOT_TOKEN: str
+
+    # Telegram settings
+    OWNER_ID: int
 
     @classmethod
     def settings_customise_sources(

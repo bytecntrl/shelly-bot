@@ -1,20 +1,16 @@
 import functools
 import typing
 
-from aiogram.types.base import TelegramObject
+from telethon import events
+from telethon.events.common import EventCommon
 
-from core.utilities import filters
 
-
-def on_update(type_handler: str, filters: filters = filters.all):
+def on_update(event: events = events.Raw()):
     def decorator(func: typing.Callable):
-        func.type_handler = type_handler
+        func.event = event
 
         @functools.wraps(func)
-        async def wrapper(update: TelegramObject):
-            if not (await filters(update)):
-                return
-
+        async def wrapper(update: EventCommon):
             return await func(update)
 
         return wrapper
