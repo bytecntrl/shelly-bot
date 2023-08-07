@@ -4,15 +4,12 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from core.config import Session
 
 START_BUTTONS_OWNER = (
-    ("🛠 Manage Shelly", "shelly|manage"),
+    ("🛠 Manage Shelly", "shelly|manage|1"),
     ("📊 Status Shelly", "shelly|status"),
     ("👮 Admin", "admin|1"),
 )
 
-START_BUTTONS_ADMIN = (
-    ("🛠 Manage Shelly", "shelly|manage"),
-    ("📊 Status Shelly", "shelly|status"),
-)
+START_BUTTONS_ADMIN = (("📊 Status Shelly", "shelly|status"),)
 
 
 @Client.on_message(filters.command("start") & ~Session.owner & ~Session.admins)

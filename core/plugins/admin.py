@@ -6,6 +6,7 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
+from tortoise.exceptions import IntegrityError
 
 from core.config import Session
 from core.database.models import Admin
@@ -58,7 +59,9 @@ async def admin_cb(client: Client, callback_query: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex(r"^admin\|remove\|(\d+)\|(\d+)$"))
+@Client.on_callback_query(
+    filters.regex(r"^admin\|remove\|(\d+)\|(\d+)$") & Session.owner
+)
 async def remove_admin_cb(client: Client, callback_query: CallbackQuery):
     matches = callback_query.matches[0]
     page = int(matches.group(1))
@@ -67,7 +70,7 @@ async def remove_admin_cb(client: Client, callback_query: CallbackQuery):
     data = await Admin.get_or_none(id=admin_id)
 
     if not data:
-        return await callback_query.answer("Impossibile!")
+        return await callback_query.answer("Impossible!")
 
     await data.delete()
 
@@ -78,14 +81,16 @@ async def remove_admin_cb(client: Client, callback_query: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex(r"^admin\|add$") & ~has_status)
-async def add_admin_cb(client: Client, callback_query: CallbackQuery):
+@Client.on_callback_query(
+    filters.regex(r"^admin\|add$") & ~has_status & Session.owner
+)
+async def add_admin_cb(_: Client, callback_query: CallbackQuery):
     await callback_query.edit_message_text("Now send the id of the new admin:")
 
     Session.status[callback_query.from_user.id]["status"] = "add_admin"
 
 
-@Client.on_message(check_status("add_admin") & filters.text)
+@Client.on_message(check_status("add_admin") & filters.text & Session.owner)
 async def add_admin(client: Client, message: Message):
     del Session.status[message.from_user.id]
 
@@ -99,7 +104,11 @@ async def add_admin(client: Client, message: Message):
     except PeerIdInvalid:
         return await message.reply("The user has not start the bot")
 
+    try:
+        await Admin.create(user_id=new_admin_id)
+    except IntegrityError:
+        return await message.reply("Admin already exists")
+
     Session.admins.add(new_admin_id)
-    await Admin.create(user_id=new_admin_id)
 
     await message.reply("Done!")
