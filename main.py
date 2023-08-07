@@ -7,6 +7,11 @@ from tortoise import run_async
 
 from core.config import Config, Session
 from core.database import init_db
+from core.database.models import Admin
+
+
+async def get_admin_id():
+    return [x["user_id"] for x in await Admin.all().values("user_id")]
 
 
 async def main():
@@ -21,6 +26,9 @@ async def main():
 
     # start db
     await init_db()
+
+    # Add admin from db
+    Session.admins.update(await get_admin_id())
 
     # Create session directory - if not exists
     path = pathlib.Path("core/session")
