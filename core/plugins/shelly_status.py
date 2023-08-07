@@ -18,19 +18,18 @@ async def get_shelly_status_buttons(page: int):
     for x in data:
         api = ShellyApi(x["url"])
         is_active = await api.is_active()
-        name = await api.get_name() or x["url"]
 
         if not is_active:
             buttons.append(
                 [
-                    InlineKeyboardButton(x["url"], "XX"),
+                    InlineKeyboardButton(x["name"], "XX"),
                     InlineKeyboardButton("🔴", "XX"),
                 ]
             )
         else:
             buttons.append(
                 [
-                    InlineKeyboardButton(name, "XX"),
+                    InlineKeyboardButton(x["name"], "XX"),
                     InlineKeyboardButton("🟢", "XX"),
                 ]
             )

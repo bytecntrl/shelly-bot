@@ -10,7 +10,6 @@ from tortoise.exceptions import IntegrityError
 
 from core.config import Session
 from core.database.models import Shelly
-from core.utils import ShellyApi
 from core.utils.custom_filters import check_status, has_status
 
 
@@ -19,9 +18,7 @@ async def get_shelly_buttons(page: int):
     data = await Shelly.all().offset((page - 1) * limit).limit(limit).values()
     buttons = [
         [
-            InlineKeyboardButton(
-                await ShellyApi(x["url"]).get_name() or x["url"], f"XX"
-            ),
+            InlineKeyboardButton(x["name"], f"XX"),
             InlineKeyboardButton(
                 "❌", f"shelly|manage|remove|{page}|{x['id']}"
             ),
@@ -88,16 +85,30 @@ async def remove_shelly_cb(_: Client, callback_query: CallbackQuery):
 )
 async def add_shelly_cb(_: Client, callback_query: CallbackQuery):
     await callback_query.edit_message_text(
-        "Now send the url of the new shelly:"
+        "Now send the name of the new shelly:"
     )
 
-    Session.status[callback_query.from_user.id]["status"] = "add_shelly_url"
+    Session.status[callback_query.from_user.id]["status"] = "add_shelly"
+
+
+@Client.on_message(check_status("add_shelly") & filters.text & Session.owner)
+async def add_shelly_name(_: Client, message: Message):
+    Session.status[message.from_user.id]["status"] = "add_shelly_url"
+    Session.status[message.from_user.id]["name"] = message.text
+
+    if len(message.text) > 100:
+        del Session.status[message.from_user.id]
+
+        return await message.reply("Text too long")
+
+    await message.reply("Now send the url of the new shelly:")
 
 
 @Client.on_message(
     check_status("add_shelly_url") & filters.text & Session.owner
 )
 async def add_shelly_url(_: Client, message: Message):
+    data = Session.status[message.from_user.id].copy()
     del Session.status[message.from_user.id]
 
     url = [
@@ -110,7 +121,7 @@ async def add_shelly_url(_: Client, message: Message):
         return await message.reply("The text is not a URL valid.")
 
     try:
-        await Shelly.create(url=url[0])
+        await Shelly.create(name=data["name"], url=url[0])
     except IntegrityError:
         return await message.reply("Shelly already exist")
 
