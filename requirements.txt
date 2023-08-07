@@ -1,4 +1,5 @@
-telethon
+pyrogram
+tgcrypto
 python-dotenv
 pydantic
 pydantic-settings
