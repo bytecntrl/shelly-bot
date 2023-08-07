@@ -6,7 +6,7 @@ from core.config import Session
 START_BUTTONS_OWNER = (
     ("🛠 Manage Shelly", "shelly|manage"),
     ("📊 Status Shelly", "shelly|status"),
-    ("👮 Admin", "admin"),
+    ("👮 Admin", "admin|1"),
 )
 
 START_BUTTONS_ADMIN = (
@@ -36,7 +36,7 @@ async def start_admin(_: Client, message: Message):
 
 
 @Client.on_message(filters.command("start") & Session.owner)
-async def start_admin(_: Client, message: Message):
+async def start_owner(_: Client, message: Message):
     await message.reply(
         "hi!",
         reply_markup=InlineKeyboardMarkup(

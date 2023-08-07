@@ -34,6 +34,7 @@ class Config(BaseSettings):
     API_ID: int
     API_HASH: str
     BOT_TOKEN: str
+    MAX_ELEMENTS_PAGE: int = 5
 
     # Telegram settings
     OWNER_ID: int
