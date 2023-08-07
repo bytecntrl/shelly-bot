@@ -1,3 +1,5 @@
+import asyncio
+
 from aiohttp.client_exceptions import ClientError
 
 from core.config import Session
@@ -23,7 +25,7 @@ class ShellyApi:
                     and "wifi_sta" in status
                     and status["wifi_sta"]["connected"]
                 )
-        except ClientError:
+        except (ClientError, asyncio.TimeoutError):
             return False
 
     async def get_name(self) -> str | None:
@@ -35,5 +37,5 @@ class ShellyApi:
                     return settings["name"]
 
                 return
-        except ClientError:
+        except (ClientError, asyncio.TimeoutError):
             return

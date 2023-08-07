@@ -1,6 +1,6 @@
 import collections
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 from pyrogram import filters
 
 from core.config import Config
@@ -11,4 +11,4 @@ class Session:
     owner = filters.user()
     admins = filters.user()
     status: dict[int, dict] = collections.defaultdict(dict)
-    session = ClientSession()
+    session = ClientSession(timeout=ClientTimeout(0.7))

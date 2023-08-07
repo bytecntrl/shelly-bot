@@ -6,10 +6,14 @@ from core.config import Session
 START_BUTTONS_OWNER = (
     ("🛠 Manage Shelly", "shelly|manage|1"),
     ("📊 Status Shelly", "shelly|status|1"),
+    ("✋ Shelly Actions", "shelly|actions|1"),
     ("👮 Admin", "admin|1"),
 )
 
-START_BUTTONS_ADMIN = (("📊 Status Shelly", "shelly|status|1"),)
+START_BUTTONS_ADMIN = (
+    ("📊 Status Shelly", "shelly|status|1"),
+    ("✋ Shelly Actions", "shelly|actions|1"),
+)
 
 
 @Client.on_message(filters.command("start") & ~Session.owner & ~Session.admins)
