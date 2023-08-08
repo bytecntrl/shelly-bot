@@ -52,6 +52,9 @@ async def get_shelly_status_buttons(page: int):
     if page_buttons:
         buttons.append(page_buttons)
 
+    if not buttons:
+        return None
+
     return InlineKeyboardMarkup(buttons)
 
 

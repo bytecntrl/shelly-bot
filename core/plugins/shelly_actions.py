@@ -54,6 +54,9 @@ async def get_action_buttons(page: int):
     if page_buttons:
         buttons.append(page_buttons)
 
+    if not buttons:
+        return None
+
     return InlineKeyboardMarkup(buttons)
 
 
