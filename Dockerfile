@@ -1,5 +1,7 @@
 FROM python:alpine
 
+RUN apk add --no-cache gcc musl-dev
+
 WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
