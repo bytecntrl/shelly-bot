@@ -30,7 +30,8 @@ async def get_action_buttons(page: int):
                 [
                     InlineKeyboardButton(x["name"], "XX"),
                     InlineKeyboardButton(
-                        "▶️", f"shelly|actions|open|{x['id']}"
+                        "◀️" if await api.is_on() else "▶️",
+                        f"shelly|actions|open|{page}|{x['id']}",
                     ),
                 ]
             )
@@ -66,3 +67,27 @@ async def shelly_action_cb(_: Client, callback_query: CallbackQuery):
     await callback_query.edit_message_text(
         "Shelly actions:", reply_markup=await get_action_buttons(page)
     )
+
+
+@Client.on_callback_query(
+    filters.regex(r"^shelly\|actions\|open\|(\d+)\|(\d+)$")
+    & (Session.owner | Session.admins)
+)
+async def shelly_action_open_cb(_: Client, callback_query: CallbackQuery):
+    page = int(callback_query.matches[0].group(1))
+    shelly_id = int(callback_query.matches[0].group(2))
+
+    data = await Shelly.get_or_none(id=shelly_id)
+
+    if not data:
+        return await callback_query.answer("Impossible!")
+
+    result = await ShellyApi(data.url).turn_on()
+
+    if not result:
+        return await callback_query.answer("Impossible!")
+
+    await callback_query.edit_message_reply_markup(
+        await get_action_buttons(page)
+    )
+    await callback_query.answer("Done!")

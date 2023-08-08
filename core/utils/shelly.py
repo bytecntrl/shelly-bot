@@ -1,8 +1,17 @@
 import asyncio
 
 from aiohttp.client_exceptions import ClientError
+from pydantic import BaseModel, ValidationError
 
 from core.config import Session
+
+
+class GetShellyResponse(BaseModel):
+    type: str
+    mac: str
+    auth: bool
+    fw: str
+    longid: int
 
 
 class ShellyApi:
@@ -17,25 +26,34 @@ class ShellyApi:
 
     async def is_active(self) -> bool:
         try:
-            async with Session.session.get(f"{self.url}status") as resp:
+            async with Session.session.get(f"{self.url}shelly") as resp:
                 status = await resp.json()
 
-                return (
-                    resp.status == 200
-                    and "wifi_sta" in status
-                    and status["wifi_sta"]["connected"]
-                )
+                return bool(resp.status == 200 and GetShellyResponse(**status))
+        except (ClientError, asyncio.TimeoutError, ValidationError):
+            return False
+
+    async def turn_on(self) -> bool:
+        params = {"turn": "toggle"}
+
+        try:
+            async with Session.session.get(
+                f"{self.url}relay/0", params=params
+            ) as resp:
+                relay = await resp.json()
+
+                return bool(resp.status == 200 and "ison" in relay)
         except (ClientError, asyncio.TimeoutError):
             return False
 
-    async def get_name(self) -> str | None:
+    async def is_on(self) -> bool | None:
         try:
-            async with Session.session.get(f"{self.url}settings") as resp:
-                settings = await resp.json()
+            async with Session.session.get(f"{self.url}relay/0") as resp:
+                relay = await resp.json()
 
-                if resp.status == 200 and "name" in settings:
-                    return settings["name"]
+                if not (resp.status == 200 and "ison" in relay):
+                    return None
 
-                return
+                return relay["ison"]
         except (ClientError, asyncio.TimeoutError):
-            return
+            return None
